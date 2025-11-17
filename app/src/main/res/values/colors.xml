@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_dark">#3D2C5C</color>
+    <color name="purple_medium">#5B4B7D</color>
+    <color name="red_accent">#C84B4B</color>
+    <color name="red_dark">#A53E3E</color>
+    <color name="white">#FFFFFF</color>
+    <color name="light_gray">#F5F5F5</color>
+    <color name="dark_gray">#333333</color>
+    <color name="yellow_star">#FFC107</color>
+    <color name="gradient_start">#C84B4B</color>
+    <color name="gradient_end">#3D2C5C</color>
+</resources>

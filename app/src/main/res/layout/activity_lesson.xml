@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/gradient_background">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Шапка -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:paddingHorizontal="16dp">
+
+            <ImageView
+                android:id="@+id/ivBackLesson"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/ic_back"
+                android:layout_centerVertical="true"
+                android:padding="4dp"/>
+
+            <TextView
+                android:id="@+id/tvLessonNumber"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Урок 1/15"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_centerInParent="true"/>
+
+        </RelativeLayout>
+
+        <!-- Карточка урока -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="8dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="24dp">
+
+                <!-- Статус badge -->
+                <TextView
+                    android:id="@+id/tvLessonStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="НЕ ЗАВЕРШЁН"
+                    android:textColor="@color/white"
+                    android:background="@drawable/badge_background"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="6dp"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginBottom="16dp"/>
+
+                <!-- Заголовок урока -->
+                <TextView
+                    android:id="@+id/tvLessonTitleDetail"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="День 1: Введение в тренировки"
+                    android:textColor="@color/dark_gray"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:layout_marginBottom="12dp"/>
+
+                <!-- Тип урока -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginBottom="20dp">
+
+                    <ImageView
+                        android:id="@+id/ivLessonTypeIcon"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_daily"
+                        android:layout_marginEnd="6dp"/>
+
+                    <TextView
+                        android:id="@+id/tvLessonTypeDetail"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Ежедневный урок"
+                        android:textColor="@color/purple_dark"
+                        android:textSize="14sp"
+                        android:textStyle="bold"/>
+                </LinearLayout>
+
+                <!-- Разделитель -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#E0E0E0"
+                    android:layout_marginVertical="16dp"/>
+
+                <!-- Описание урока -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Описание задания:"
+                    android:textColor="@color/dark_gray"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp"/>
+
+                <TextView
+                    android:id="@+id/tvLessonDescriptionDetail"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Изучите базовые принципы силовых тренировок. Выполните 10 отжиманий и 10 приседаний."
+                    android:textColor="@color/dark_gray"
+                    android:textSize="15sp"
+                    android:lineSpacingExtra="4dp"
+                    android:layout_marginBottom="20dp"/>
+
+                <!-- Награда -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:background="@drawable/reward_background"
+                    android:padding="16dp"
+                    android:layout_marginBottom="24dp">
+
+                    <ImageView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:src="@drawable/ic_experience"
+                        android:layout_marginEnd="12dp"/>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Награда за выполнение"
+                            android:textColor="@color/dark_gray"
+                            android:textSize="12sp"
+                            android:alpha="0.7"/>
+
+                        <TextView
+                            android:id="@+id/tvLessonReward"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="+50 XP"
+                            android:textColor="@color/purple_dark"
+                            android:textSize="20sp"
+                            android:textStyle="bold"/>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Кнопка завершения -->
+                <Button
+                    android:id="@+id/btnCompleteLesson"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:text="ЗАВЕРШИТЬ УРОК"
+                    android:textColor="@color/white"
+                    android:background="@drawable/button_background"
+                    android:textStyle="bold"
+                    android:textSize="16sp"/>
+
+                <!-- Текст для завершённых уроков -->
+                <TextView
+                    android:id="@+id/tvCompletedMessage"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="✓ Урок уже завершён"
+                    android:textColor="#4CAF50"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:padding="16dp"
+                    android:visibility="gone"/>
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- Советы/Подсказки (опционально) -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="💡 Совет"
+                    android:textColor="@color/purple_dark"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp"/>
+
+                <TextView
+                    android:id="@+id/tvLessonTip"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Не спешите! Главное - правильная техника выполнения, а не скорость."
+                    android:textColor="@color/dark_gray"
+                    android:textSize="14sp"
+                    android:lineSpacingExtra="2dp"/>
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+    </LinearLayout>
+
+</ScrollView>
