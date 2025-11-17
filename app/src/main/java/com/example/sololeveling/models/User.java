@@ -46,7 +46,11 @@ public class User {
     public int getExperience() { return experience; }
     public void setExperience(int experience) { this.experience = experience; }
 
+    // ИСПРАВЛЕНО: реализована логика расчета уровня
     public void calculateLevel() {
-
+        // Простая формула: каждые 100 XP = новый уровень
+        // Можно настроить под свои нужды
+        int newLevel = 1 + (experience / 100);
+        this.level = newLevel;
     }
 }

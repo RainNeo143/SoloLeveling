@@ -16,6 +16,9 @@ import com.example.sololeveling.R;
 import com.example.sololeveling.database.AppDatabase;
 import com.example.sololeveling.models.User;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class RegisterActivity extends AppCompatActivity {
 
     private EditText etLogin, etEmail, etPassword, etConfirmPassword;
@@ -23,6 +26,7 @@ public class RegisterActivity extends AppCompatActivity {
     private Button btnRegister;
     private TextView tvLoginLink;
     private AppDatabase database;
+    private ExecutorService executorService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +34,7 @@ public class RegisterActivity extends AppCompatActivity {
         setContentView(R.layout.activity_register);
 
         database = AppDatabase.getInstance(this);
+        executorService = Executors.newSingleThreadExecutor();
 
         initViews();
         setupListeners();
@@ -49,8 +54,8 @@ public class RegisterActivity extends AppCompatActivity {
         btnRegister.setOnClickListener(v -> registerUser());
 
         tvLoginLink.setOnClickListener(v -> {
-            // Переход на экран входа (создадим позже)
-            finish();
+            Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+            startActivity(intent);
         });
     }
 
@@ -91,33 +96,51 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
-        // Проверка существования пользователя
-        User existingUser = database.userDao().getUserByLogin(login);
-        if (existingUser != null) {
-            Toast.makeText(this, "Пользователь с таким логином уже существует", Toast.LENGTH_SHORT).show();
-            return;
+        // ИСПРАВЛЕНО: Регистрация теперь в фоновом потоке
+        executorService.execute(() -> {
+            // Проверка существования пользователя
+            User existingUser = database.userDao().getUserByLogin(login);
+            if (existingUser != null) {
+                runOnUiThread(() ->
+                        Toast.makeText(this, "Пользователь с таким логином уже существует", Toast.LENGTH_SHORT).show()
+                );
+                return;
+            }
+
+            // Создание пользователя
+            User newUser = new User(login, email, password, login);
+            database.userDao().insert(newUser);
+
+            // Получить созданного пользователя с ID
+            User createdUser = database.userDao().getUserByLogin(login);
+
+            runOnUiThread(() -> {
+                // Сохранение в SharedPreferences если нужно запомнить
+                if (cbRememberPassword.isChecked()) {
+                    SharedPreferences prefs = getSharedPreferences("SoloLevelingPrefs", MODE_PRIVATE);
+                    prefs.edit()
+                            .putString("login", login)
+                            .putString("password", password)
+                            .putBoolean("remember", true)
+                            .apply();
+                }
+
+                Toast.makeText(this, "Регистрация успешна!", Toast.LENGTH_SHORT).show();
+
+                // Переход на главный экран
+                Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
+                intent.putExtra("userId", createdUser.getId());
+                startActivity(intent);
+                finish();
+            });
+        });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (executorService != null && !executorService.isShutdown()) {
+            executorService.shutdown();
         }
-
-        // Создание пользователя
-        User newUser = new User(login, email, password, login);
-        database.userDao().insert(newUser);
-
-        // Сохранение в SharedPreferences если нужно запомнить
-        if (cbRememberPassword.isChecked()) {
-            SharedPreferences prefs = getSharedPreferences("SoloLevelingPrefs", MODE_PRIVATE);
-            prefs.edit()
-                    .putString("login", login)
-                    .putString("password", password)
-                    .putBoolean("remember", true)
-                    .apply();
-        }
-
-        Toast.makeText(this, "Регистрация успешна!", Toast.LENGTH_SHORT).show();
-
-        // Переход на главный экран
-        Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
-        intent.putExtra("userId", newUser.getId());
-        startActivity(intent);
-        finish();
     }
 }

@@ -51,12 +51,13 @@ public class Quest {
     public String getIconType() { return iconType; }
     public void setIconType(String iconType) { this.iconType = iconType; }
 
-    // ТВОЙ ОШИБОЧНЫЙ МЕТОД — исправлено
+    // ИСПРАВЛЕНО: метод getIcon() теперь возвращает iconType
     public String getIcon() {
-        return iconType; // или вернуть путь к картинке, если хочешь
+        return iconType;
     }
 
+    // ИСПРАВЛЕНО: метод getReward() теперь возвращает цену как строку
     public String getReward() {
-        return null; // тут вставь нужную логику
+        return String.valueOf(price);
     }
 }

@@ -1,3 +1,4 @@
+
 package com.example.sololeveling.activities;
 
 import android.content.Intent;
@@ -16,6 +17,9 @@ import com.example.sololeveling.R;
 import com.example.sololeveling.database.AppDatabase;
 import com.example.sololeveling.models.User;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class LoginActivity extends AppCompatActivity {
 
     private EditText etLoginUsername, etLoginPassword;
@@ -23,6 +27,7 @@ public class LoginActivity extends AppCompatActivity {
     private Button btnLogin;
     private TextView tvRegisterLink, tvForgotPassword;
     private AppDatabase database;
+    private ExecutorService executorService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +35,7 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 
         database = AppDatabase.getInstance(this);
+        executorService = Executors.newSingleThreadExecutor();
 
         initViews();
         checkSavedCredentials();
@@ -87,32 +93,45 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        // Проверка учетных данных
-        User user = database.userDao().login(login, password);
+        // ИСПРАВЛЕНО: Вход теперь в фоновом потоке
+        executorService.execute(() -> {
+            // Проверка учетных данных
+            User user = database.userDao().login(login, password);
 
-        if (user != null) {
-            // Сохранение в SharedPreferences если нужно запомнить
-            SharedPreferences prefs = getSharedPreferences("SoloLevelingPrefs", MODE_PRIVATE);
-            SharedPreferences.Editor editor = prefs.edit();
+            runOnUiThread(() -> {
+                if (user != null) {
+                    // Сохранение в SharedPreferences если нужно запомнить
+                    SharedPreferences prefs = getSharedPreferences("SoloLevelingPrefs", MODE_PRIVATE);
+                    SharedPreferences.Editor editor = prefs.edit();
 
-            if (cbLoginRememberPassword.isChecked()) {
-                editor.putString("login", login);
-                editor.putString("password", password);
-                editor.putBoolean("remember", true);
-            } else {
-                editor.clear();
-            }
-            editor.apply();
+                    if (cbLoginRememberPassword.isChecked()) {
+                        editor.putString("login", login);
+                        editor.putString("password", password);
+                        editor.putBoolean("remember", true);
+                    } else {
+                        editor.clear();
+                    }
+                    editor.apply();
 
-            Toast.makeText(this, "Добро пожаловать, " + user.getNickname() + "!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Добро пожаловать, " + user.getNickname() + "!", Toast.LENGTH_SHORT).show();
 
-            // Переход на главный экран
-            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-            intent.putExtra("userId", user.getId());
-            startActivity(intent);
-            finish();
-        } else {
-            Toast.makeText(this, "Неверный логин или пароль", Toast.LENGTH_SHORT).show();
+                    // Переход на главный экран
+                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                    intent.putExtra("userId", user.getId());
+                    startActivity(intent);
+                    finish();
+                } else {
+                    Toast.makeText(this, "Неверный логин или пароль", Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (executorService != null && !executorService.isShutdown()) {
+            executorService.shutdown();
         }
     }
 }

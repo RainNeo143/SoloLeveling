@@ -19,6 +19,8 @@ import com.example.sololeveling.models.User;
 import com.example.sololeveling.models.UserQuestProgress;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class LessonActivity extends AppCompatActivity {
 
@@ -34,6 +36,7 @@ public class LessonActivity extends AppCompatActivity {
     private User currentUser;
     private int totalLessons;
     private int currentLessonNumber;
+    private ExecutorService executorService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,10 +44,10 @@ public class LessonActivity extends AppCompatActivity {
         setContentView(R.layout.activity_lesson);
 
         database = AppDatabase.getInstance(this);
+        executorService = Executors.newSingleThreadExecutor();
 
         initViews();
         loadData();
-        updateUI();
         setupListeners();
     }
 
@@ -73,35 +76,42 @@ public class LessonActivity extends AppCompatActivity {
             return;
         }
 
-        // Загрузка урока
-        List<Lesson> allLessons = database.lessonDao().getLessonsByQuestId(questId);
-        lesson = null;
-        for (Lesson l : allLessons) {
-            if (l.getId() == lessonId) {
-                lesson = l;
-                break;
+        // ИСПРАВЛЕНО: Загрузка данных в фоновом потоке
+        executorService.execute(() -> {
+            // Загрузка урока
+            List<Lesson> allLessons = database.lessonDao().getLessonsByQuestId(questId);
+            lesson = null;
+            for (Lesson l : allLessons) {
+                if (l.getId() == lessonId) {
+                    lesson = l;
+                    break;
+                }
             }
-        }
 
-        if (lesson == null) {
-            Toast.makeText(this, "Урок не найден", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
-
-        // Загрузка квеста
-        List<Quest> allQuests = database.questDao().getAllQuests();
-        quest = null;
-        for (Quest q : allQuests) {
-            if (q.getId() == questId) {
-                quest = q;
-                break;
+            if (lesson == null) {
+                runOnUiThread(() -> {
+                    Toast.makeText(this, "Урок не найден", Toast.LENGTH_SHORT).show();
+                    finish();
+                });
+                return;
             }
-        }
 
-        currentUser = database.userDao().getUserById(userId);
-        totalLessons = database.lessonDao().getTotalLessonsCount(questId);
-        currentLessonNumber = lesson.getOrderNumber();
+            // Загрузка квеста
+            List<Quest> allQuests = database.questDao().getAllQuests();
+            quest = null;
+            for (Quest q : allQuests) {
+                if (q.getId() == questId) {
+                    quest = q;
+                    break;
+                }
+            }
+
+            currentUser = database.userDao().getUserById(userId);
+            totalLessons = database.lessonDao().getTotalLessonsCount(questId);
+            currentLessonNumber = lesson.getOrderNumber();
+
+            runOnUiThread(this::updateUI);
+        });
     }
 
     private void updateUI() {
@@ -197,32 +207,37 @@ public class LessonActivity extends AppCompatActivity {
     }
 
     private void completeLesson() {
-        // Отметить урок как завершённый
-        lesson.setCompleted(true);
-        database.lessonDao().update(lesson);
+        // ИСПРАВЛЕНО: Завершение урока в фоновом потоке
+        executorService.execute(() -> {
+            // Отметить урок как завершённый
+            lesson.setCompleted(true);
+            database.lessonDao().update(lesson);
 
-        // Добавить опыт пользователю
-        int newExperience = currentUser.getExperience() + lesson.getExperienceReward();
-        currentUser.setExperience(newExperience);
+            // Добавить опыт пользователю
+            int newExperience = currentUser.getExperience() + lesson.getExperienceReward();
+            currentUser.setExperience(newExperience);
 
-        // Проверить повышение уровня
-        int oldLevel = currentUser.getLevel();
-        currentUser.calculateLevel();
-        int newLevel = currentUser.getLevel();
+            // Проверить повышение уровня
+            int oldLevel = currentUser.getLevel();
+            currentUser.calculateLevel();
+            int newLevel = currentUser.getLevel();
 
-        database.userDao().update(currentUser);
+            database.userDao().update(currentUser);
 
-        // Обновить прогресс квеста
-        UserQuestProgress progress = database.userQuestProgressDao()
-                .getProgress(currentUser.getId(), quest.getId());
-        if (progress != null) {
-            int completed = database.lessonDao().getCompletedLessonsCount(quest.getId());
-            progress.setCompletedLessons(completed);
-            database.userQuestProgressDao().update(progress);
-        }
+            // Обновить прогресс квеста
+            UserQuestProgress progress = database.userQuestProgressDao()
+                    .getProgress(currentUser.getId(), quest.getId());
+            if (progress != null) {
+                int completed = database.lessonDao().getCompletedLessonsCount(quest.getId());
+                progress.setCompletedLessons(completed);
+                database.userQuestProgressDao().update(progress);
+            }
 
-        // Показать диалог с наградой
-        showRewardDialog(oldLevel, newLevel);
+            runOnUiThread(() -> {
+                // Показать диалог с наградой
+                showRewardDialog(oldLevel, newLevel);
+            });
+        });
     }
 
     private void showRewardDialog(int oldLevel, int newLevel) {
@@ -232,23 +247,31 @@ public class LessonActivity extends AppCompatActivity {
             message += "\n\n🎉 ПОЗДРАВЛЯЕМ!\nВы достигли " + newLevel + " уровня!";
         }
 
-        // Проверить, все ли уроки завершены
-        int completed = database.lessonDao().getCompletedLessonsCount(quest.getId());
-        if (completed == totalLessons) {
-            message += "\n\n⭐ Квест полностью завершён!";
-        }
+        // ИСПРАВЛЕНО: Проверка завершения квеста в фоновом потоке
+        String finalMessage1 = message;
+        executorService.execute(() -> {
+            int completed = database.lessonDao().getCompletedLessonsCount(quest.getId());
 
-        new AlertDialog.Builder(this)
-                .setTitle("🏆 Урок завершён!")
-                .setMessage(message)
-                .setPositiveButton("Отлично!", (dialog, which) -> {
-                    // Анимация
-                    animateReward();
-                    // Обновить UI
-                    updateUI();
-                })
-                .setCancelable(false)
-                .show();
+            String finalMessage = finalMessage1;
+            if (completed == totalLessons) {
+                finalMessage += "\n\n⭐ Квест полностью завершён!";
+            }
+
+            String displayMessage = finalMessage;
+            runOnUiThread(() -> {
+                new AlertDialog.Builder(this)
+                        .setTitle("🏆 Урок завершён!")
+                        .setMessage(displayMessage)
+                        .setPositiveButton("Отлично!", (dialog, which) -> {
+                            // Анимация
+                            animateReward();
+                            // Обновить UI
+                            updateUI();
+                        })
+                        .setCancelable(false)
+                        .show();
+            });
+        });
     }
 
     private void animateReward() {
@@ -258,5 +281,13 @@ public class LessonActivity extends AppCompatActivity {
         scaleY.setDuration(500);
         scaleX.start();
         scaleY.start();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (executorService != null && !executorService.isShutdown()) {
+            executorService.shutdown();
+        }
     }
 }
