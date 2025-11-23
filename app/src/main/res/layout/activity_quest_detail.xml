@@ -115,7 +115,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginTop="8dp">
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="12dp">
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -179,6 +180,31 @@
                 </LinearLayout>
             </LinearLayout>
 
+            <!-- Кнопка отзывов -->
+            <Button
+                android:id="@+id/btnViewComments"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="ОТЗЫВЫ И КОММЕНТАРИИ"
+                android:textColor="@color/purple_dark"
+                android:background="@android:color/transparent"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:drawableEnd="@drawable/ic_chevron_right"
+                android:gravity="center"
+                android:layout_marginBottom="8dp"/>
+
+            <TextView
+                android:id="@+id/tvCommentsCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0 отзывов"
+                android:textColor="@color/dark_gray"
+                android:textSize="12sp"
+                android:layout_gravity="center_horizontal"
+                android:alpha="0.7"
+                android:layout_marginBottom="16dp"/>
+
             <!-- Кнопка старта/продолжения -->
             <Button
                 android:id="@+id/btnStartQuest"
@@ -187,8 +213,7 @@
                 android:text="НАЧАТЬ КВЕСТ"
                 android:textColor="@color/white"
                 android:background="@drawable/button_background"
-                android:textStyle="bold"
-                android:layout_marginTop="16dp"/>
+                android:textStyle="bold"/>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
@@ -211,5 +236,4 @@
         android:layout_weight="1"
         android:paddingHorizontal="16dp"
         android:paddingBottom="16dp"/>
-
 </LinearLayout>

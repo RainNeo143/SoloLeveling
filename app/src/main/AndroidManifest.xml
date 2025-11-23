@@ -26,7 +26,7 @@
             </intent-filter>
         </activity>
 
-        <!-- LoginActivity - ДОБАВЛЕНО -->
+        <!-- LoginActivity -->
         <activity
             android:name=".activities.LoginActivity"
             android:exported="false"
@@ -58,6 +58,17 @@
         <!-- LessonActivity -->
         <activity
             android:name=".activities.LessonActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".activities.QuestDetailActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activities.QuestDetailActivity" />
+        </activity>
+
+        <!-- CommentsActivity - НОВАЯ АКТИВИТИ -->
+        <activity
+            android:name=".activities.CommentsActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:parentActivityName=".activities.QuestDetailActivity">

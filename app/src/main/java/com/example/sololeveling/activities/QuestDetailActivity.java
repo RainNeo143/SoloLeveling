@@ -26,10 +26,10 @@ import java.util.concurrent.Executors;
 
 public class QuestDetailActivity extends AppCompatActivity implements LessonAdapter.OnLessonClickListener {
 
-    private TextView tvQuestTitle, tvProgressPercentage, tvCompletedLessons, tvReward, tvRatingDetail;
+    private TextView tvQuestTitle, tvProgressPercentage, tvCompletedLessons, tvReward, tvRatingDetail, tvCommentsCount;
     private ProgressBar progressBar;
     private ImageView ivBackDetail, ivFavoriteDetail, ivQuestIconDetail;
-    private Button btnStartQuest;
+    private Button btnStartQuest, btnViewComments;
     private RecyclerView rvLessons;
 
     private LessonAdapter lessonAdapter;
@@ -60,11 +60,13 @@ public class QuestDetailActivity extends AppCompatActivity implements LessonAdap
         tvCompletedLessons = findViewById(R.id.tvCompletedLessons);
         tvReward = findViewById(R.id.tvReward);
         tvRatingDetail = findViewById(R.id.tvRatingDetail);
+        tvCommentsCount = findViewById(R.id.tvCommentsCount);
         progressBar = findViewById(R.id.progressBar);
         ivBackDetail = findViewById(R.id.ivBackDetail);
         ivFavoriteDetail = findViewById(R.id.ivFavoriteDetail);
         ivQuestIconDetail = findViewById(R.id.ivQuestIconDetail);
         btnStartQuest = findViewById(R.id.btnStartQuest);
+        btnViewComments = findViewById(R.id.btnViewComments);
         rvLessons = findViewById(R.id.rvLessons);
     }
 
@@ -84,9 +86,7 @@ public class QuestDetailActivity extends AppCompatActivity implements LessonAdap
             return;
         }
 
-        // ИСПРАВЛЕНО: Загрузка данных в фоновом потоке
         executorService.execute(() -> {
-            // Загрузка данных из БД
             List<Quest> allQuests = database.questDao().getAllQuests();
             quest = null;
             for (Quest q : allQuests) {
@@ -107,7 +107,6 @@ public class QuestDetailActivity extends AppCompatActivity implements LessonAdap
             currentUser = database.userDao().getUserById(userId);
             lessons = database.lessonDao().getLessonsByQuestId(questId);
 
-            // Получить или создать прогресс
             progress = database.userQuestProgressDao().getProgress(userId, questId);
             if (progress == null) {
                 progress = new UserQuestProgress(userId, questId, lessons.size());
@@ -115,10 +114,23 @@ public class QuestDetailActivity extends AppCompatActivity implements LessonAdap
                 progress = database.userQuestProgressDao().getProgress(userId, questId);
             }
 
-            // Обновление UI в главном потоке
+            // Загрузка рейтинга и комментариев
+            Float avgRating = database.questRatingDao().getAverageRating(questId);
+            int commentsCount = database.commentDao().getCommentsCount(questId);
+
             runOnUiThread(() -> {
                 lessonAdapter.setLessons(lessons);
                 updateUI();
+
+                // Обновление рейтинга
+                if (avgRating != null && avgRating > 0) {
+                    tvRatingDetail.setText(String.format("%.1f", avgRating));
+                } else {
+                    tvRatingDetail.setText("—");
+                }
+
+                // Обновление количества комментариев
+                tvCommentsCount.setText(commentsCount + " отзывов");
             });
         });
     }
@@ -127,7 +139,6 @@ public class QuestDetailActivity extends AppCompatActivity implements LessonAdap
         ivBackDetail.setOnClickListener(v -> finish());
 
         ivFavoriteDetail.setOnClickListener(v -> {
-            // ИСПРАВЛЕНО: Обновление в фоновом потоке
             executorService.execute(() -> {
                 quest.setFavorite(!quest.isFavorite());
                 database.questDao().update(quest);
@@ -152,7 +163,6 @@ public class QuestDetailActivity extends AppCompatActivity implements LessonAdap
                     });
                 }
 
-                // Найти следующий доступный урок
                 Lesson nextLesson = database.lessonDao().getNextIncompleteLesson(quest.getId());
                 runOnUiThread(() -> {
                     if (nextLesson != null) {
@@ -163,6 +173,14 @@ public class QuestDetailActivity extends AppCompatActivity implements LessonAdap
                 });
             });
         });
+
+        btnViewComments.setOnClickListener(v -> {
+            Intent intent = new Intent(this, CommentsActivity.class);
+            intent.putExtra("questId", quest.getId());
+            intent.putExtra("userId", currentUser.getId());
+            intent.putExtra("questName", quest.getName());
+            startActivity(intent);
+        });
     }
 
     private void updateUI() {
@@ -170,13 +188,10 @@ public class QuestDetailActivity extends AppCompatActivity implements LessonAdap
 
         tvQuestTitle.setText(quest.getName());
         tvReward.setText("$ " + quest.getReward());
-        tvRatingDetail.setText(String.valueOf(quest.getRating()));
 
-        // Установить иконку квеста
         setQuestIcon();
         updateFavoriteIcon();
 
-        // ИСПРАВЛЕНО: Обновить прогресс в фоновом потоке
         executorService.execute(() -> {
             int completed = database.lessonDao().getCompletedLessonsCount(quest.getId());
             int total = lessons.size();
@@ -193,7 +208,6 @@ public class QuestDetailActivity extends AppCompatActivity implements LessonAdap
                 tvCompletedLessons.setText("Выполнено: " + finalCompleted + "/" + total + " уроков");
                 progressBar.setProgress(finalPercentage);
 
-                // Обновить текст кнопки
                 if (progress.isActive()) {
                     if (finalCompleted == total) {
                         btnStartQuest.setText("КВЕСТ ЗАВЕРШЁН");
@@ -210,27 +224,15 @@ public class QuestDetailActivity extends AppCompatActivity implements LessonAdap
 
     private void setQuestIcon() {
         String iconName = quest.getIcon();
-        int iconRes = R.drawable.ic_gym; // default
+        int iconRes = R.drawable.ic_gym;
 
         switch (iconName) {
-            case "gym":
-                iconRes = R.drawable.ic_gym;
-                break;
-            case "run":
-                iconRes = R.drawable.ic_run;
-                break;
-            case "finance":
-                iconRes = R.drawable.ic_finance;
-                break;
-            case "art":
-                iconRes = R.drawable.ic_art;
-                break;
-            case "code":
-                iconRes = R.drawable.ic_code;
-                break;
-            case "cook":
-                iconRes = R.drawable.ic_cook;
-                break;
+            case "gym": iconRes = R.drawable.ic_gym; break;
+            case "run": iconRes = R.drawable.ic_run; break;
+            case "finance": iconRes = R.drawable.ic_finance; break;
+            case "art": iconRes = R.drawable.ic_art; break;
+            case "code": iconRes = R.drawable.ic_code; break;
+            case "cook": iconRes = R.drawable.ic_cook; break;
         }
 
         ivQuestIconDetail.setImageResource(iconRes);
@@ -260,7 +262,6 @@ public class QuestDetailActivity extends AppCompatActivity implements LessonAdap
     @Override
     protected void onResume() {
         super.onResume();
-        // Обновить данные при возврате из урока
         loadData();
     }
 
