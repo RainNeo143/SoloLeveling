@@ -5,6 +5,7 @@
     <!-- Разрешения -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -66,7 +67,7 @@
                 android:value=".activities.QuestDetailActivity" />
         </activity>
 
-        <!-- CommentsActivity - НОВАЯ АКТИВИТИ -->
+        <!-- CommentsActivity -->
         <activity
             android:name=".activities.CommentsActivity"
             android:exported="false"
@@ -75,6 +76,63 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activities.QuestDetailActivity" />
+        </activity>
+
+        <!-- НОВЫЕ АКТИВИТИ -->
+
+        <!-- ProfileActivity - Редактирование своего профиля -->
+        <activity
+            android:name=".activities.ProfileActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
+        </activity>
+
+        <!-- ProfileViewActivity - Просмотр профиля другого пользователя -->
+        <activity
+            android:name=".activities.ProfileViewActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
+        </activity>
+
+        <!-- ChatActivity - Чат с пользователем -->
+        <activity
+            android:name=".activities.ChatActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
+        </activity>
+
+        <!-- ChatsListActivity - Список всех чатов -->
+        <activity
+            android:name=".activities.ChatsListActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
+        </activity>
+
+        <!-- NotificationsActivity - Уведомления -->
+        <activity
+            android:name=".activities.NotificationsActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
         </activity>
 
     </application>

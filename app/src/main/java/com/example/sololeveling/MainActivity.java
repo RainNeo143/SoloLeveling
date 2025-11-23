@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -16,7 +17,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.sololeveling.activities.ChatsListActivity;
+import com.example.sololeveling.activities.NotificationsActivity;
 import com.example.sololeveling.activities.ProgressActivity;
+import com.example.sololeveling.activities.ProfileActivity;
 import com.example.sololeveling.activities.QuestDetailActivity;
 import com.example.sololeveling.adapters.QuestAdapter;
 import com.example.sololeveling.database.AppDatabase;
@@ -28,6 +32,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity implements QuestAdapter.OnQuestClickListener {
 
@@ -37,6 +43,8 @@ public class MainActivity extends AppCompatActivity implements QuestAdapter.OnQu
     private Button btnGoToPopular;
     private RecyclerView rvQuests;
     private LinearLayout llCategories;
+    private View notificationBadge;
+    private Button btnMessagesMenu;
 
     private QuestAdapter questAdapter;
     private AppDatabase database;
@@ -44,6 +52,7 @@ public class MainActivity extends AppCompatActivity implements QuestAdapter.OnQu
     private List<Quest> allQuests;
     private String selectedCategory = "Все";
     private ExecutorService executorService;
+    private Timer notificationCheckTimer;
 
     private final String[] categories = {"Все", "Спорт", "Финансы", "Искусство", "Обучение", "Здоровье"};
 
@@ -62,6 +71,9 @@ public class MainActivity extends AppCompatActivity implements QuestAdapter.OnQu
 
         // ИСПРАВЛЕНО: Загрузка пользователя в фоновом потоке
         loadCurrentUser();
+
+        // Запустить проверку уведомлений каждые 10 секунд
+        startNotificationCheck();
     }
 
     private void initViews() {
@@ -74,6 +86,19 @@ public class MainActivity extends AppCompatActivity implements QuestAdapter.OnQu
         btnGoToPopular = findViewById(R.id.btnGoToPopular);
         rvQuests = findViewById(R.id.rvQuests);
         llCategories = findViewById(R.id.llCategories);
+
+        // Попробуйте найти эти элементы (если они есть в layout)
+        try {
+            notificationBadge = findViewById(R.id.notificationBadge);
+        } catch (Exception e) {
+            // Если не нашли, создадим программно или пропустим
+        }
+
+        try {
+            btnMessagesMenu = findViewById(R.id.btnMessagesMenu);
+        } catch (Exception e) {
+            // Если не нашли, это нормально
+        }
     }
 
     private void loadCurrentUser() {
@@ -95,6 +120,9 @@ public class MainActivity extends AppCompatActivity implements QuestAdapter.OnQu
             runOnUiThread(() -> {
                 if (currentUser != null) {
                     tvNickname.setText(currentUser.getNickname());
+                    updateNotificationBadge();
+                } else {
+                    Toast.makeText(this, "Ошибка загрузки пользователя", Toast.LENGTH_SHORT).show();
                 }
 
                 // После загрузки пользователя инициализируем квесты
@@ -187,11 +215,35 @@ public class MainActivity extends AppCompatActivity implements QuestAdapter.OnQu
             public void afterTextChanged(Editable s) {}
         });
 
-        // Переход к экрану прогресса
+        // ОБНОВЛЕНО: Переход к профилю
         ivAvatar.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, ProgressActivity.class);
-            startActivity(intent);
+            if (currentUser != null) {
+                Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
+                intent.putExtra("userId", currentUser.getId());
+                startActivity(intent);
+            }
         });
+
+        // ОБНОВЛЕНО: Открытие уведомлений
+        ivNotifications.setOnClickListener(v -> {
+            if (currentUser != null) {
+                Intent intent = new Intent(MainActivity.this, NotificationsActivity.class);
+                intent.putExtra("userId", currentUser.getId());
+                startActivity(intent);
+                updateNotificationBadge();
+            }
+        });
+
+        // НОВОЕ: Открытие списка чатов (если кнопка добавлена в layout)
+        if (btnMessagesMenu != null) {
+            btnMessagesMenu.setOnClickListener(v -> {
+                if (currentUser != null) {
+                    Intent intent = new Intent(MainActivity.this, ChatsListActivity.class);
+                    intent.putExtra("userId", currentUser.getId());
+                    startActivity(intent);
+                }
+            });
+        }
 
         // Остальные обработчики
         tvSeeAll.setOnClickListener(v ->
@@ -202,13 +254,42 @@ public class MainActivity extends AppCompatActivity implements QuestAdapter.OnQu
                 Toast.makeText(this, "Популярные квесты", Toast.LENGTH_SHORT).show()
         );
 
-        ivNotifications.setOnClickListener(v ->
-                Toast.makeText(this, "Уведомления", Toast.LENGTH_SHORT).show()
-        );
-
         ivFilter.setOnClickListener(v ->
                 Toast.makeText(this, "Фильтры", Toast.LENGTH_SHORT).show()
         );
+    }
+
+    // НОВОЕ: Метод для обновления бейджа уведомлений
+    private void updateNotificationBadge() {
+        if (currentUser != null) {
+            executorService.execute(() -> {
+                int unreadCount = database.notificationDao()
+                        .getUnreadNotificationsCount(currentUser.getId());
+                int unreadMessages = database.messageDao()
+                        .getTotalUnreadMessages(currentUser.getId());
+
+                int totalUnread = unreadCount + unreadMessages;
+
+                runOnUiThread(() -> {
+                    if (totalUnread > 0 && notificationBadge != null) {
+                        notificationBadge.setVisibility(View.VISIBLE);
+                    } else if (notificationBadge != null) {
+                        notificationBadge.setVisibility(View.GONE);
+                    }
+                });
+            });
+        }
+    }
+
+    // НОВОЕ: Автоматическая проверка уведомлений каждые 10 секунд
+    private void startNotificationCheck() {
+        notificationCheckTimer = new Timer();
+        notificationCheckTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                updateNotificationBadge();
+            }
+        }, 0, 10000); // Проверяем каждые 10 секунд
     }
 
     private void initializeQuests() {
@@ -299,10 +380,29 @@ public class MainActivity extends AppCompatActivity implements QuestAdapter.OnQu
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        // Обновляем бейдж при возврате на экран
+        updateNotificationBadge();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // Останавливаем проверку уведомлений когда активити не видна
+        if (notificationCheckTimer != null) {
+            notificationCheckTimer.cancel();
+        }
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         if (executorService != null && !executorService.isShutdown()) {
             executorService.shutdown();
+        }
+        if (notificationCheckTimer != null) {
+            notificationCheckTimer.cancel();
         }
     }
 }

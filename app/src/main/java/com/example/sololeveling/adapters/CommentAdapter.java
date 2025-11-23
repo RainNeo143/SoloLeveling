@@ -88,6 +88,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
             tvUserName.setText(item.userName);
             tvCommentText.setText(item.comment.getText());
 
+
             // Форматирование времени
             SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault());
             tvTimestamp.setText(sdf.format(new Date(item.comment.getTimestamp())));

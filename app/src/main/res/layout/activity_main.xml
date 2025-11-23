@@ -51,15 +51,48 @@
             </LinearLayout>
         </LinearLayout>
 
-        <!-- Уведомления -->
-        <ImageView
-            android:id="@+id/ivNotifications"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:src="@drawable/ic_notifications"
+        <!-- Кнопки справа (уведомления + фильтр) -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
-            android:padding="4dp"/>
+            android:gravity="center_vertical">
+
+            <!-- Уведомления с красной точкой -->
+            <FrameLayout
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="8dp">
+
+                <ImageView
+                    android:id="@+id/ivNotifications"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/ic_notifications"
+                    android:layout_gravity="center"
+                    android:padding="4dp"/>
+
+                <!-- КРАСНАЯ ТОЧКА - индикатор уведомлений -->
+                <View
+                    android:id="@+id/notificationBadge"
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:background="@drawable/badge_background"
+                    android:layout_gravity="top|end"
+                    android:layout_margin="2dp"
+                    android:visibility="gone"/>
+            </FrameLayout>
+
+            <!-- Фильтр -->
+            <ImageView
+                android:id="@+id/ivFilter"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/ic_filter"
+                android:padding="4dp"/>
+        </LinearLayout>
     </RelativeLayout>
 
     <!-- Поиск и фильтр -->
@@ -85,14 +118,6 @@
             android:drawableStart="@drawable/ic_search"
             android:drawablePadding="8dp"
             android:inputType="text"/>
-
-        <ImageView
-            android:id="@+id/ivFilter"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@drawable/ic_filter"
-            android:layout_marginStart="8dp"
-            android:padding="12dp"/>
     </LinearLayout>
 
     <!-- Категории -->
@@ -126,6 +151,41 @@
             android:orientation="vertical"
             android:padding="16dp">
 
+            <!-- Кнопки меню для быстрого доступа -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingHorizontal="0dp"
+                android:paddingVertical="8dp"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="16dp">
+
+                <Button
+                    android:id="@+id/btnMessagesMenu"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:text="💬 СООБЩЕНИЯ"
+                    android:textColor="@color/white"
+                    android:background="@drawable/button_background"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:layout_marginEnd="8dp"/>
+
+                <Button
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:text="👤 ПРОФИЛЬ"
+                    android:textColor="@color/white"
+                    android:background="@drawable/button_background"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:layout_marginStart="8dp"
+                    android:onClick="onProfileButtonClick"/>
+            </LinearLayout>
+
             <!-- Популярное за сентябрь -->
             <LinearLayout
                 android:layout_width="match_parent"
@@ -151,7 +211,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="игра на инструменте"
+                        android:text="улучшение навыков"
                         android:textColor="@color/white"
                         android:textSize="12sp"
                         android:alpha="0.8"/>
