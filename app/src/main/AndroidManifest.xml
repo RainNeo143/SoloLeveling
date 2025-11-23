@@ -26,6 +26,12 @@
             </intent-filter>
         </activity>
 
+        <!-- LoginActivity - ДОБАВЛЕНО -->
+        <activity
+            android:name=".activities.LoginActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
         <!-- MainActivity -->
         <activity
             android:name=".MainActivity"
@@ -38,7 +44,7 @@
             android:exported="false"
             android:screenOrientation="portrait" />
 
-        <!-- QuestDetailActivity - НОВАЯ -->
+        <!-- QuestDetailActivity -->
         <activity
             android:name=".activities.QuestDetailActivity"
             android:exported="false"
@@ -49,7 +55,7 @@
                 android:value=".MainActivity" />
         </activity>
 
-        <!-- LessonActivity - НОВАЯ -->
+        <!-- LessonActivity -->
         <activity
             android:name=".activities.LessonActivity"
             android:exported="false"

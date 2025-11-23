@@ -56,20 +56,12 @@ public class MainActivity extends AppCompatActivity implements QuestAdapter.OnQu
         database = AppDatabase.getInstance(this);
 
         initViews();
-        loadCurrentUser();
         setupCategories();
         setupRecyclerView();
         setupListeners();
 
-        // Инициализация квестов и уроков в фоновом потоке
-        executorService.execute(() -> {
-            initializeQuests();
-            initializeLessons();
-
-            runOnUiThread(() -> {
-                loadQuests();
-            });
-        });
+        // ИСПРАВЛЕНО: Загрузка пользователя в фоновом потоке
+        loadCurrentUser();
     }
 
     private void initViews() {
@@ -85,21 +77,42 @@ public class MainActivity extends AppCompatActivity implements QuestAdapter.OnQu
     }
 
     private void loadCurrentUser() {
-        SharedPreferences prefs = getSharedPreferences("SoloLevelingPrefs", MODE_PRIVATE);
-        int userId = getIntent().getIntExtra("userId", -1);
+        // ИСПРАВЛЕНО: Выполнение в фоновом потоке
+        executorService.execute(() -> {
+            SharedPreferences prefs = getSharedPreferences("SoloLevelingPrefs", MODE_PRIVATE);
+            int userId = getIntent().getIntExtra("userId", -1);
 
-        if (userId == -1) {
-            String login = prefs.getString("login", "");
-            if (!login.isEmpty()) {
-                currentUser = database.userDao().getUserByLogin(login);
+            if (userId == -1) {
+                String login = prefs.getString("login", "");
+                if (!login.isEmpty()) {
+                    currentUser = database.userDao().getUserByLogin(login);
+                }
+            } else {
+                currentUser = database.userDao().getUserById(userId);
             }
-        } else {
-            currentUser = database.userDao().getUserById(userId);
-        }
 
-        if (currentUser != null) {
-            tvNickname.setText(currentUser.getNickname());
-        }
+            // Обновление UI в главном потоке
+            runOnUiThread(() -> {
+                if (currentUser != null) {
+                    tvNickname.setText(currentUser.getNickname());
+                }
+
+                // После загрузки пользователя инициализируем квесты
+                initializeData();
+            });
+        });
+    }
+
+    private void initializeData() {
+        // Инициализация квестов и уроков в фоновом потоке
+        executorService.execute(() -> {
+            initializeQuests();
+            initializeLessons();
+
+            runOnUiThread(() -> {
+                loadQuests();
+            });
+        });
     }
 
     private void setupCategories() {
@@ -233,8 +246,11 @@ public class MainActivity extends AppCompatActivity implements QuestAdapter.OnQu
     }
 
     private void loadQuests() {
-        allQuests = database.questDao().getAllQuests();
-        filterQuests();
+        // ИСПРАВЛЕНО: Загрузка в фоновом потоке
+        executorService.execute(() -> {
+            allQuests = database.questDao().getAllQuests();
+            runOnUiThread(this::filterQuests);
+        });
     }
 
     private void filterQuests() {
@@ -272,9 +288,14 @@ public class MainActivity extends AppCompatActivity implements QuestAdapter.OnQu
 
     @Override
     public void onFavoriteClick(Quest quest) {
-        database.questDao().update(quest);
-        String message = quest.isFavorite() ? "Добавлено в избранное" : "Удалено из избранного";
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        // ИСПРАВЛЕНО: Обновление в фоновом потоке
+        executorService.execute(() -> {
+            database.questDao().update(quest);
+            runOnUiThread(() -> {
+                String message = quest.isFavorite() ? "Добавлено в избранное" : "Удалено из избранного";
+                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+            });
+        });
     }
 
     @Override

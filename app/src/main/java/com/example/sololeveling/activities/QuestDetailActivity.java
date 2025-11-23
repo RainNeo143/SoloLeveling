@@ -21,6 +21,8 @@ import com.example.sololeveling.models.User;
 import com.example.sololeveling.models.UserQuestProgress;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class QuestDetailActivity extends AppCompatActivity implements LessonAdapter.OnLessonClickListener {
 
@@ -36,6 +38,7 @@ public class QuestDetailActivity extends AppCompatActivity implements LessonAdap
     private User currentUser;
     private UserQuestProgress progress;
     private List<Lesson> lessons;
+    private ExecutorService executorService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,12 +46,12 @@ public class QuestDetailActivity extends AppCompatActivity implements LessonAdap
         setContentView(R.layout.activity_quest_detail);
 
         database = AppDatabase.getInstance(this);
+        executorService = Executors.newSingleThreadExecutor();
 
         initViews();
-        loadData();
         setupRecyclerView();
+        loadData();
         setupListeners();
-        updateUI();
     }
 
     private void initViews() {
@@ -65,6 +68,12 @@ public class QuestDetailActivity extends AppCompatActivity implements LessonAdap
         rvLessons = findViewById(R.id.rvLessons);
     }
 
+    private void setupRecyclerView() {
+        lessonAdapter = new LessonAdapter(this);
+        rvLessons.setLayoutManager(new LinearLayoutManager(this));
+        rvLessons.setAdapter(lessonAdapter);
+    }
+
     private void loadData() {
         int questId = getIntent().getIntExtra("questId", -1);
         int userId = getIntent().getIntExtra("userId", -1);
@@ -75,67 +84,84 @@ public class QuestDetailActivity extends AppCompatActivity implements LessonAdap
             return;
         }
 
-        // Загрузка данных из БД
-        List<Quest> allQuests = database.questDao().getAllQuests();
-        quest = null;
-        for (Quest q : allQuests) {
-            if (q.getId() == questId) {
-                quest = q;
-                break;
+        // ИСПРАВЛЕНО: Загрузка данных в фоновом потоке
+        executorService.execute(() -> {
+            // Загрузка данных из БД
+            List<Quest> allQuests = database.questDao().getAllQuests();
+            quest = null;
+            for (Quest q : allQuests) {
+                if (q.getId() == questId) {
+                    quest = q;
+                    break;
+                }
             }
-        }
 
-        if (quest == null) {
-            Toast.makeText(this, "Квест не найден", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
+            if (quest == null) {
+                runOnUiThread(() -> {
+                    Toast.makeText(this, "Квест не найден", Toast.LENGTH_SHORT).show();
+                    finish();
+                });
+                return;
+            }
 
-        currentUser = database.userDao().getUserById(userId);
-        lessons = database.lessonDao().getLessonsByQuestId(questId);
+            currentUser = database.userDao().getUserById(userId);
+            lessons = database.lessonDao().getLessonsByQuestId(questId);
 
-        // Получить или создать прогресс
-        progress = database.userQuestProgressDao().getProgress(userId, questId);
-        if (progress == null) {
-            progress = new UserQuestProgress(userId, questId, lessons.size());
-            database.userQuestProgressDao().insert(progress);
+            // Получить или создать прогресс
             progress = database.userQuestProgressDao().getProgress(userId, questId);
-        }
-    }
+            if (progress == null) {
+                progress = new UserQuestProgress(userId, questId, lessons.size());
+                database.userQuestProgressDao().insert(progress);
+                progress = database.userQuestProgressDao().getProgress(userId, questId);
+            }
 
-    private void setupRecyclerView() {
-        lessonAdapter = new LessonAdapter(this);
-        rvLessons.setLayoutManager(new LinearLayoutManager(this));
-        rvLessons.setAdapter(lessonAdapter);
-        lessonAdapter.setLessons(lessons);
+            // Обновление UI в главном потоке
+            runOnUiThread(() -> {
+                lessonAdapter.setLessons(lessons);
+                updateUI();
+            });
+        });
     }
 
     private void setupListeners() {
         ivBackDetail.setOnClickListener(v -> finish());
 
         ivFavoriteDetail.setOnClickListener(v -> {
-            quest.setFavorite(!quest.isFavorite());
-            database.questDao().update(quest);
-            updateFavoriteIcon();
-            Toast.makeText(this, quest.isFavorite() ? "Добавлено в избранное" : "Удалено из избранного",
-                    Toast.LENGTH_SHORT).show();
+            // ИСПРАВЛЕНО: Обновление в фоновом потоке
+            executorService.execute(() -> {
+                quest.setFavorite(!quest.isFavorite());
+                database.questDao().update(quest);
+
+                runOnUiThread(() -> {
+                    updateFavoriteIcon();
+                    Toast.makeText(this, quest.isFavorite() ? "Добавлено в избранное" : "Удалено из избранного",
+                            Toast.LENGTH_SHORT).show();
+                });
+            });
         });
 
         btnStartQuest.setOnClickListener(v -> {
-            if (!progress.isActive()) {
-                progress.setActive(true);
-                database.userQuestProgressDao().update(progress);
-                Toast.makeText(this, "Квест активирован!", Toast.LENGTH_SHORT).show();
-                updateUI();
-            }
+            executorService.execute(() -> {
+                if (!progress.isActive()) {
+                    progress.setActive(true);
+                    database.userQuestProgressDao().update(progress);
 
-            // Найти следующий доступный урок
-            Lesson nextLesson = database.lessonDao().getNextIncompleteLesson(quest.getId());
-            if (nextLesson != null) {
-                openLesson(nextLesson);
-            } else {
-                Toast.makeText(this, "Все уроки завершены!", Toast.LENGTH_SHORT).show();
-            }
+                    runOnUiThread(() -> {
+                        Toast.makeText(this, "Квест активирован!", Toast.LENGTH_SHORT).show();
+                        updateUI();
+                    });
+                }
+
+                // Найти следующий доступный урок
+                Lesson nextLesson = database.lessonDao().getNextIncompleteLesson(quest.getId());
+                runOnUiThread(() -> {
+                    if (nextLesson != null) {
+                        openLesson(nextLesson);
+                    } else {
+                        Toast.makeText(this, "Все уроки завершены!", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            });
         });
     }
 
@@ -150,30 +176,36 @@ public class QuestDetailActivity extends AppCompatActivity implements LessonAdap
         setQuestIcon();
         updateFavoriteIcon();
 
-        // Обновить прогресс
-        int completed = database.lessonDao().getCompletedLessonsCount(quest.getId());
-        int total = lessons.size();
-        int percentage = total > 0 ? (completed * 100) / total : 0;
+        // ИСПРАВЛЕНО: Обновить прогресс в фоновом потоке
+        executorService.execute(() -> {
+            int completed = database.lessonDao().getCompletedLessonsCount(quest.getId());
+            int total = lessons.size();
+            int percentage = total > 0 ? (completed * 100) / total : 0;
 
-        progress.setCompletedLessons(completed);
-        progress.setTotalLessons(total);
-        database.userQuestProgressDao().update(progress);
+            progress.setCompletedLessons(completed);
+            progress.setTotalLessons(total);
+            database.userQuestProgressDao().update(progress);
 
-        tvProgressPercentage.setText(percentage + "%");
-        tvCompletedLessons.setText("Выполнено: " + completed + "/" + total + " уроков");
-        progressBar.setProgress(percentage);
+            int finalCompleted = completed;
+            int finalPercentage = percentage;
+            runOnUiThread(() -> {
+                tvProgressPercentage.setText(finalPercentage + "%");
+                tvCompletedLessons.setText("Выполнено: " + finalCompleted + "/" + total + " уроков");
+                progressBar.setProgress(finalPercentage);
 
-        // Обновить текст кнопки
-        if (progress.isActive()) {
-            if (completed == total) {
-                btnStartQuest.setText("КВЕСТ ЗАВЕРШЁН");
-                btnStartQuest.setEnabled(false);
-            } else {
-                btnStartQuest.setText("ПРОДОЛЖИТЬ");
-            }
-        } else {
-            btnStartQuest.setText("НАЧАТЬ КВЕСТ");
-        }
+                // Обновить текст кнопки
+                if (progress.isActive()) {
+                    if (finalCompleted == total) {
+                        btnStartQuest.setText("КВЕСТ ЗАВЕРШЁН");
+                        btnStartQuest.setEnabled(false);
+                    } else {
+                        btnStartQuest.setText("ПРОДОЛЖИТЬ");
+                    }
+                } else {
+                    btnStartQuest.setText("НАЧАТЬ КВЕСТ");
+                }
+            });
+        });
     }
 
     private void setQuestIcon() {
@@ -230,7 +262,13 @@ public class QuestDetailActivity extends AppCompatActivity implements LessonAdap
         super.onResume();
         // Обновить данные при возврате из урока
         loadData();
-        lessonAdapter.setLessons(lessons);
-        updateUI();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (executorService != null && !executorService.isShutdown()) {
+            executorService.shutdown();
+        }
     }
 }
