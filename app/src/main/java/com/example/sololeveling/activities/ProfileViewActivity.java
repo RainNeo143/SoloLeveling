@@ -1,19 +1,17 @@
-// ProfileViewActivity.java - Просмотр профиля другого пользователя
 package com.example.sololeveling.activities;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.sololeveling.R;
 import com.example.sololeveling.database.AppDatabase;
 import com.example.sololeveling.models.User;
+import com.example.sololeveling.utils.ImageUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -105,9 +103,8 @@ public class ProfileViewActivity extends AppCompatActivity {
         tvCity.setText(viewedUser.getCity().isEmpty() ? "Город не указан" : viewedUser.getCity());
         tvBio.setText(viewedUser.getBio().isEmpty() ? "О себе не рассказал" : viewedUser.getBio());
 
-        if (viewedUser.getAvatarPath() != null && !viewedUser.getAvatarPath().isEmpty()) {
-            ivProfileAvatar.setImageURI(Uri.parse(viewedUser.getAvatarPath()));
-        }
+        // ИСПРАВЛЕНО: Безопасная загрузка аватара
+        ImageUtils.loadAvatar(this, viewedUser.getAvatarPath(), ivProfileAvatar);
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault());
         String joinDate = sdf.format(new Date(viewedUser.getCreatedDate()));

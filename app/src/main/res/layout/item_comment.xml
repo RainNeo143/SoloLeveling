@@ -13,7 +13,6 @@
         android:orientation="horizontal"
         android:padding="12dp">
 
-        <!-- Индикатор ответа -->
         <View
             android:id="@+id/replyIndicator"
             android:layout_width="3dp"
@@ -27,7 +26,6 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Заголовок -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -41,9 +39,12 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Имя пользователя"
-                    android:textColor="@color/dark_gray"
+                    android:textColor="@color/purple_dark"
                     android:textSize="14sp"
-                    android:textStyle="bold"/>
+                    android:textStyle="bold"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground"/>
 
                 <TextView
                     android:id="@+id/tvTimestamp"
@@ -55,7 +56,6 @@
                     android:alpha="0.6"/>
             </LinearLayout>
 
-            <!-- Текст комментария -->
             <TextView
                 android:id="@+id/tvCommentText"
                 android:layout_width="match_parent"
@@ -66,7 +66,6 @@
                 android:lineSpacingExtra="2dp"
                 android:layout_marginBottom="8dp"/>
 
-            <!-- Действия -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -81,7 +80,10 @@
                     android:textColor="@color/purple_dark"
                     android:textSize="12sp"
                     android:textStyle="bold"
-                    android:padding="4dp"/>
+                    android:padding="4dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground"/>
 
                 <TextView
                     android:id="@+id/tvRepliesCount"
@@ -96,13 +98,30 @@
                     android:visibility="gone"/>
 
                 <TextView
+                    android:id="@+id/tvSendMessage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="💬 Написать"
+                    android:textColor="@color/purple_dark"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:padding="4dp"
+                    android:layout_marginEnd="8dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground"/>
+
+                <TextView
                     android:id="@+id/tvDelete"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Удалить"
                     android:textColor="@color/red_accent"
                     android:textSize="12sp"
-                    android:padding="4dp"/>
+                    android:padding="4dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground"/>
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>

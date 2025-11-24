@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- activity_profile.xml - Редактирование профиля -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -42,119 +41,207 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Аватарка -->
+            <!-- Карточка основной информации -->
             <androidx.cardview.widget.CardView
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_gravity="center_horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:cardCornerRadius="60dp"
+                app:cardCornerRadius="16dp"
                 app:cardElevation="8dp">
 
-                <ImageView
-                    android:id="@+id/ivProfileAvatar"
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:src="@drawable/ic_avatar"
-                    android:scaleType="centerCrop"/>
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp"
+                    android:gravity="center_horizontal">
+
+                    <!-- Аватарка -->
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="120dp"
+                        android:layout_height="120dp"
+                        android:layout_marginBottom="16dp"
+                        app:cardCornerRadius="60dp"
+                        app:cardElevation="8dp">
+
+                        <ImageView
+                            android:id="@+id/ivProfileAvatar"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:src="@drawable/ic_avatar"
+                            android:scaleType="centerCrop"/>
+                    </androidx.cardview.widget.CardView>
+
+                    <!-- Кнопка изменить аватарку -->
+                    <Button
+                        android:id="@+id/btnChangeAvatar"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:text="ИЗМЕНИТЬ АВАТАРКУ"
+                        android:textColor="@color/white"
+                        android:background="@drawable/button_background"
+                        android:layout_marginBottom="16dp"
+                        android:textStyle="bold"
+                        android:textSize="12sp"/>
+
+                    <!-- Уровень и опыт -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center"
+                        android:layout_marginBottom="16dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center">
+
+                            <TextView
+                                android:id="@+id/tvProfileLevel"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Уровень: 1"
+                                android:textColor="@color/purple_dark"
+                                android:textSize="16sp"
+                                android:textStyle="bold"/>
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="1dp"
+                            android:layout_height="match_parent"
+                            android:background="#E0E0E0"
+                            android:layout_marginHorizontal="16dp"/>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center">
+
+                            <TextView
+                                android:id="@+id/tvProfileExperience"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Опыт: 0 XP"
+                                android:textColor="@color/purple_dark"
+                                android:textSize="16sp"
+                                android:textStyle="bold"/>
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Ник -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Никнейм"
+                        android:textColor="@color/dark_gray"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="4dp"
+                        android:layout_gravity="start"/>
+
+                    <EditText
+                        android:id="@+id/etNickname"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:hint="Введите ник"
+                        android:textColor="@color/dark_gray"
+                        android:textColorHint="#B0B0B0"
+                        android:background="@drawable/edit_text_background"
+                        android:paddingHorizontal="16dp"
+                        android:layout_marginBottom="16dp"/>
+
+                    <!-- Город -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Город"
+                        android:textColor="@color/dark_gray"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="4dp"
+                        android:layout_gravity="start"/>
+
+                    <EditText
+                        android:id="@+id/etCity"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:hint="Введите город"
+                        android:textColor="@color/dark_gray"
+                        android:textColorHint="#B0B0B0"
+                        android:background="@drawable/edit_text_background"
+                        android:paddingHorizontal="16dp"
+                        android:layout_marginBottom="16dp"/>
+
+                    <!-- О себе -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="О себе"
+                        android:textColor="@color/dark_gray"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="4dp"
+                        android:layout_gravity="start"/>
+
+                    <EditText
+                        android:id="@+id/etBio"
+                        android:layout_width="match_parent"
+                        android:layout_height="120dp"
+                        android:hint="Расскажите о себе (макс 500 символов)"
+                        android:textColor="@color/dark_gray"
+                        android:textColorHint="#B0B0B0"
+                        android:background="@drawable/edit_text_background"
+                        android:padding="16dp"
+                        android:gravity="top"
+                        android:maxLength="500"
+                        android:inputType="textMultiLine"
+                        android:layout_marginBottom="16dp"/>
+
+                    <!-- Кнопки -->
+                    <Button
+                        android:id="@+id/btnSaveProfile"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:text="СОХРАНИТЬ ПРОФИЛЬ"
+                        android:textColor="@color/white"
+                        android:background="@drawable/button_background"
+                        android:layout_marginBottom="8dp"
+                        android:textStyle="bold"/>
+
+                    <Button
+                        android:id="@+id/btnChangePassword"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:text="ИЗМЕНИТЬ ПАРОЛЬ"
+                        android:textColor="@color/purple_dark"
+                        android:background="@android:color/transparent"
+                        android:textStyle="bold"/>
+                </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- Кнопка изменить аватарку -->
-            <Button
-                android:id="@+id/btnChangeAvatar"
-                android:layout_width="match_parent"
-                android:layout_height="44dp"
-                android:text="ИЗМЕНИТЬ АВАТАРКУ"
-                android:textColor="@color/white"
-                android:background="@drawable/button_background"
-                android:layout_marginBottom="24dp"
-                android:textStyle="bold"/>
-
-            <!-- Ник -->
+            <!-- Заголовок прогресса -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Ник"
+                android:text="Мой прогресс по курсам"
                 android:textColor="@color/white"
-                android:textSize="14sp"
+                android:textSize="18sp"
                 android:textStyle="bold"
-                android:layout_marginBottom="4dp"/>
+                android:layout_marginBottom="12dp"/>
 
-            <EditText
-                android:id="@+id/etNickname"
+            <!-- Секция прогресса -->
+            <LinearLayout
+                android:id="@+id/llProgressSection"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:hint="Введите ник"
-                android:textColor="@color/dark_gray"
-                android:textColorHint="#B0B0B0"
-                android:background="@drawable/edit_text_background"
-                android:paddingHorizontal="16dp"
-                android:layout_marginBottom="16dp"/>
-
-            <!-- Город -->
-            <TextView
-                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Город"
-                android:textColor="@color/white"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="4dp"/>
-
-            <EditText
-                android:id="@+id/etCity"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:hint="Введите город"
-                android:textColor="@color/dark_gray"
-                android:textColorHint="#B0B0B0"
-                android:background="@drawable/edit_text_background"
-                android:paddingHorizontal="16dp"
-                android:layout_marginBottom="16dp"/>
-
-            <!-- О себе -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="О себе"
-                android:textColor="@color/white"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="4dp"/>
-
-            <EditText
-                android:id="@+id/etBio"
-                android:layout_width="match_parent"
-                android:layout_height="120dp"
-                android:hint="Расскажите о себе (макс 500 символов)"
-                android:textColor="@color/dark_gray"
-                android:textColorHint="#B0B0B0"
-                android:background="@drawable/edit_text_background"
-                android:padding="16dp"
-                android:gravity="top"
-                android:maxLength="500"
-                android:inputType="textMultiLine"
-                android:layout_marginBottom="24dp"/>
-
-            <!-- Кнопки -->
-            <Button
-                android:id="@+id/btnSaveProfile"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:text="СОХРАНИТЬ ПРОФИЛЬ"
-                android:textColor="@color/white"
-                android:background="@drawable/button_background"
-                android:layout_marginBottom="8dp"
-                android:textStyle="bold"/>
-
-            <Button
-                android:id="@+id/btnChangePassword"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:text="ИЗМЕНИТЬ ПАРОЛЬ"
-                android:textColor="@color/purple_dark"
-                android:background="@android:color/transparent"
-                android:textStyle="bold"/>
+                android:orientation="vertical">
+                <!-- Карточки будут добавляться программно -->
+            </LinearLayout>
 
         </LinearLayout>
     </ScrollView>

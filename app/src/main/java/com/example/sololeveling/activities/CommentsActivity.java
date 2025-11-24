@@ -109,7 +109,6 @@ public class CommentsActivity extends AppCompatActivity implements CommentAdapte
 
     private void loadData() {
         executorService.execute(() -> {
-            // Загрузка рейтинга
             Float avgRating = database.questRatingDao().getAverageRating(questId);
             int ratingsCount = database.questRatingDao().getRatingsCount(questId);
             QuestRating userRating = database.questRatingDao().getUserRating(userId, questId);
@@ -130,7 +129,6 @@ public class CommentsActivity extends AppCompatActivity implements CommentAdapte
                 }
             });
 
-            // Загрузка комментариев
             loadComments();
         });
     }
@@ -145,14 +143,14 @@ public class CommentsActivity extends AppCompatActivity implements CommentAdapte
                 String userName = user != null ? user.getNickname() : "Пользователь";
                 int repliesCount = database.commentDao().getReplies(comment.getId()).size();
 
-                items.add(new CommentAdapter.CommentItem(comment, userName, repliesCount, false));
+                // ИСПРАВЛЕНО: Передаем currentUserId
+                items.add(new CommentAdapter.CommentItem(comment, userName, repliesCount, false, userId));
 
-                // Добавляем ответы
                 List<Comment> replies = database.commentDao().getReplies(comment.getId());
                 for (Comment reply : replies) {
                     User replyUser = database.userDao().getUserById(reply.getUserId());
                     String replyUserName = replyUser != null ? replyUser.getNickname() : "Пользователь";
-                    items.add(new CommentAdapter.CommentItem(reply, replyUserName, 0, true));
+                    items.add(new CommentAdapter.CommentItem(reply, replyUserName, 0, true, userId));
                 }
             }
 
@@ -211,7 +209,6 @@ public class CommentsActivity extends AppCompatActivity implements CommentAdapte
     @Override
     public void onDeleteClick(Comment comment) {
         executorService.execute(() -> {
-            // Проверяем, что это комментарий текущего пользователя
             if (comment.getUserId() == userId) {
                 runOnUiThread(() -> {
                     new AlertDialog.Builder(this)
