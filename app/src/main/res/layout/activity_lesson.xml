@@ -33,7 +33,6 @@
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:layout_centerInParent="true"/>
-
         </RelativeLayout>
 
         <!-- Карточка урока -->
@@ -50,7 +49,7 @@
                 android:orientation="vertical"
                 android:padding="24dp">
 
-                <!-- Статус badge -->
+                <!-- Статус -->
                 <TextView
                     android:id="@+id/tvLessonStatus"
                     android:layout_width="wrap_content"
@@ -65,12 +64,12 @@
                     android:layout_gravity="center_horizontal"
                     android:layout_marginBottom="16dp"/>
 
-                <!-- Заголовок урока -->
+                <!-- Заголовок -->
                 <TextView
                     android:id="@+id/tvLessonTitleDetail"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="День 1: Введение в тренировки"
+                    android:text="День 1: Основы силовых тренировок"
                     android:textColor="@color/dark_gray"
                     android:textSize="22sp"
                     android:textStyle="bold"
@@ -109,24 +108,22 @@
                     android:background="#E0E0E0"
                     android:layout_marginVertical="16dp"/>
 
-                <!-- Описание урока -->
-                <TextView
+                <!-- НОВОЕ: Вкладки контента -->
+                <com.google.android.material.tabs.TabLayout
+                    android:id="@+id/tabLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Описание задания:"
-                    android:textColor="@color/dark_gray"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="8dp"/>
+                    android:layout_marginBottom="16dp"
+                    app:tabMode="scrollable"
+                    app:tabTextColor="@color/dark_gray"
+                    app:tabSelectedTextColor="@color/purple_dark"
+                    app:tabIndicatorColor="@color/purple_dark"/>
 
-                <TextView
-                    android:id="@+id/tvLessonDescriptionDetail"
+                <!-- ViewPager для контента -->
+                <androidx.viewpager2.widget.ViewPager2
+                    android:id="@+id/viewPager"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Изучите базовые принципы силовых тренировок. Выполните 10 отжиманий и 10 приседаний."
-                    android:textColor="@color/dark_gray"
-                    android:textSize="15sp"
-                    android:lineSpacingExtra="4dp"
+                    android:layout_height="400dp"
                     android:layout_marginBottom="20dp"/>
 
                 <!-- Награда -->
@@ -180,24 +177,82 @@
                     android:textStyle="bold"
                     android:textSize="16sp"/>
 
-                <!-- Текст для завершённых уроков -->
+                <!-- Кнопка теста -->
+                <Button
+                    android:id="@+id/btnStartTest"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:text="📝 ПРОЙТИ ТЕСТ"
+                    android:textColor="@color/white"
+                    android:background="@drawable/button_background"
+                    android:textStyle="bold"
+                    android:textSize="16dp"
+                    android:layout_marginTop="12dp"
+                    android:visibility="gone"/>
+
+                <!-- Сообщение о завершении -->
                 <TextView
                     android:id="@+id/tvCompletedMessage"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="✓ Урок уже завершён"
+                    android:text="✓ Урок завершён"
                     android:textColor="#4CAF50"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:gravity="center"
                     android:padding="16dp"
                     android:visibility="gone"/>
-
             </LinearLayout>
-
         </androidx.cardview.widget.CardView>
 
-        <!-- Советы/Подсказки (опционально) -->
+        <!-- НОВОЕ: Секция ресурсов -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cvResources"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="📚 Дополнительные материалы"
+                    android:textColor="@color/purple_dark"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="12dp"/>
+
+                <!-- YouTube видео -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvYoutubeLinks"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"/>
+
+                <!-- Статьи -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvArticleLinks"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"/>
+
+                <!-- Книги -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvBookRecommendations"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Совет -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -225,15 +280,11 @@
                     android:id="@+id/tvLessonTip"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Не спешите! Главное - правильная техника выполнения, а не скорость."
+                    android:text="Не спешите! Главное - правильная техника выполнения."
                     android:textColor="@color/dark_gray"
                     android:textSize="14sp"
                     android:lineSpacingExtra="2dp"/>
-
             </LinearLayout>
-
         </androidx.cardview.widget.CardView>
-
     </LinearLayout>
-
 </ScrollView>

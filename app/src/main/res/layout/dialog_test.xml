@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="@drawable/card_background">
+
+    <!-- Заголовок -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="📝 Тест по уроку"
+        android:textColor="@color/purple_dark"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_marginBottom="8dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Ответьте на вопрос, чтобы проверить свои знания"
+        android:textColor="@color/dark_gray"
+        android:textSize="14sp"
+        android:gravity="center"
+        android:layout_marginBottom="24dp"
+        android:alpha="0.7"/>
+
+    <!-- Вопрос -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        android:background="#F5F5F5">
+
+        <TextView
+            android:id="@+id/tvTestQuestion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Какое правило дыхания нужно соблюдать?"
+            android:textColor="@color/dark_gray"
+            android:textSize="16sp"
+            android:padding="16dp"
+            android:lineSpacingExtra="4dp"/>
+    </androidx.cardview.widget.CardView>
+
+    <!-- Варианты ответов -->
+    <RadioGroup
+        android:id="@+id/rgAnswers"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp">
+
+        <RadioButton
+            android:id="@+id/rbOption1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Вариант 1"
+            android:textColor="@color/dark_gray"
+            android:textSize="15sp"
+            android:padding="12dp"
+            android:background="?attr/selectableItemBackground"
+            android:layout_marginBottom="8dp"/>
+
+        <RadioButton
+            android:id="@+id/rbOption2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Вариант 2"
+            android:textColor="@color/dark_gray"
+            android:textSize="15sp"
+            android:padding="12dp"
+            android:background="?attr/selectableItemBackground"
+            android:layout_marginBottom="8dp"/>
+
+        <RadioButton
+            android:id="@+id/rbOption3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Вариант 3"
+            android:textColor="@color/dark_gray"
+            android:textSize="15sp"
+            android:padding="12dp"
+            android:background="?attr/selectableItemBackground"
+            android:layout_marginBottom="8dp"/>
+
+        <RadioButton
+            android:id="@+id/rbOption4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Вариант 4"
+            android:textColor="@color/dark_gray"
+            android:textSize="15sp"
+            android:padding="12dp"
+            android:background="?attr/selectableItemBackground"/>
+    </RadioGroup>
+
+    <!-- Информация о попытках -->
+    <TextView
+        android:id="@+id/tvAttemptsInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Попытка 1 из 3"
+        android:textColor="@color/dark_gray"
+        android:textSize="12sp"
+        android:gravity="center"
+        android:layout_marginBottom="16dp"
+        android:alpha="0.6"/>
+
+    <!-- Кнопки -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btnCancelTest"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:text="ОТМЕНА"
+            android:textColor="@color/dark_gray"
+            android:background="@android:color/transparent"
+            android:layout_marginEnd="8dp"/>
+
+        <Button
+            android:id="@+id/btnSubmitTest"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:text="ПРОВЕРИТЬ"
+            android:textColor="@color/white"
+            android:background="@drawable/button_background"
+            android:textStyle="bold"
+            android:layout_marginStart="8dp"/>
+    </LinearLayout>
+</LinearLayout>

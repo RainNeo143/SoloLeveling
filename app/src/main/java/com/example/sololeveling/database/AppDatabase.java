@@ -14,6 +14,7 @@ import com.example.sololeveling.models.Comment;
 import com.example.sololeveling.models.QuestRating;
 import com.example.sololeveling.models.Message;
 import com.example.sololeveling.models.Notification;
+import com.example.sololeveling.models.DailyReminder;
 
 @Database(entities = {
         Quest.class,
@@ -23,8 +24,9 @@ import com.example.sololeveling.models.Notification;
         Comment.class,
         QuestRating.class,
         Message.class,
-        Notification.class
-}, version = 4, exportSchema = false)
+        Notification.class,
+        DailyReminder.class
+}, version = 5, exportSchema = false) // Версия обновлена до 5
 public abstract class AppDatabase extends RoomDatabase {
 
     private static volatile AppDatabase instance;
@@ -37,6 +39,7 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract QuestRatingDao questRatingDao();
     public abstract MessageDao messageDao();
     public abstract NotificationDao notificationDao();
+    public abstract DailyReminderDao dailyReminderDao(); // НОВОЕ
 
     public static synchronized AppDatabase getInstance(Context context) {
         if (instance == null) {

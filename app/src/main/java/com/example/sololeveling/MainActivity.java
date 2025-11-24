@@ -27,6 +27,7 @@ import com.example.sololeveling.database.AppDatabase;
 import com.example.sololeveling.models.Quest;
 import com.example.sololeveling.models.User;
 import com.example.sololeveling.utils.LessonInitializer;
+import com.example.sololeveling.utils.ReminderManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,6 +71,17 @@ public class MainActivity extends AppCompatActivity implements QuestAdapter.OnQu
 
         loadCurrentUser();
         startNotificationCheck();
+
+        // --- Напоминания каждые 6 часов ---
+        ReminderManager reminderManager = new ReminderManager(this);
+
+        Timer reminderTimer = new Timer();
+        reminderTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                reminderManager.checkAndSendReminders();
+            }
+        }, 0, 6 * 60 * 60 * 1000); // каждые 6 часов
     }
 
     private void initViews() {
