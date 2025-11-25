@@ -7,6 +7,8 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.RadioGroup;
+import android.widget.RadioButton;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -28,7 +30,7 @@ public class LessonActivity extends AppCompatActivity {
     private TextView tvLessonTypeDetail, tvLessonDescriptionDetail, tvLessonReward;
     private TextView tvCompletedMessage, tvLessonTip;
     private ImageView ivBackLesson, ivLessonTypeIcon;
-    private Button btnCompleteLesson;
+    private Button btnCompleteLesson, btnStartTest;
 
     private AppDatabase database;
     private Lesson lesson;
@@ -63,6 +65,7 @@ public class LessonActivity extends AppCompatActivity {
         ivBackLesson = findViewById(R.id.ivBackLesson);
         ivLessonTypeIcon = findViewById(R.id.ivLessonTypeIcon);
         btnCompleteLesson = findViewById(R.id.btnCompleteLesson);
+        btnStartTest = findViewById(R.id.btnStartTest);
     }
 
     private void loadData() {
@@ -76,9 +79,7 @@ public class LessonActivity extends AppCompatActivity {
             return;
         }
 
-        // ИСПРАВЛЕНО: Загрузка данных в фоновом потоке
         executorService.execute(() -> {
-            // Загрузка урока
             List<Lesson> allLessons = database.lessonDao().getLessonsByQuestId(questId);
             lesson = null;
             for (Lesson l : allLessons) {
@@ -96,7 +97,6 @@ public class LessonActivity extends AppCompatActivity {
                 return;
             }
 
-            // Загрузка квеста
             List<Quest> allQuests = database.questDao().getAllQuests();
             quest = null;
             for (Quest q : allQuests) {
@@ -117,33 +117,31 @@ public class LessonActivity extends AppCompatActivity {
     private void updateUI() {
         if (lesson == null) return;
 
-        // Номер урока
         tvLessonNumber.setText("Урок " + currentLessonNumber + "/" + totalLessons);
-
-        // Заголовок и описание
         tvLessonTitleDetail.setText(lesson.getTitle());
         tvLessonDescriptionDetail.setText(lesson.getDescription());
-
-        // Награда
         tvLessonReward.setText("+" + lesson.getExperienceReward() + " XP");
 
-        // Тип урока
         setLessonType();
 
-        // Статус
         if (lesson.isCompleted()) {
             tvLessonStatus.setText("ЗАВЕРШЁН");
             tvLessonStatus.setBackgroundResource(R.drawable.badge_completed);
             btnCompleteLesson.setVisibility(View.GONE);
             tvCompletedMessage.setVisibility(View.VISIBLE);
+
+            // Показать кнопку теста если он доступен
+            if (!lesson.getTestQuestion().isEmpty() && !lesson.isTestPassed()) {
+                btnStartTest.setVisibility(View.VISIBLE);
+            }
         } else {
             tvLessonStatus.setText("НЕ ЗАВЕРШЁН");
             tvLessonStatus.setBackgroundResource(R.drawable.badge_incomplete);
             btnCompleteLesson.setVisibility(View.VISIBLE);
             tvCompletedMessage.setVisibility(View.GONE);
+            btnStartTest.setVisibility(View.GONE);
         }
 
-        // Совет
         setLessonTip();
     }
 
@@ -195,6 +193,8 @@ public class LessonActivity extends AppCompatActivity {
         ivBackLesson.setOnClickListener(v -> finish());
 
         btnCompleteLesson.setOnClickListener(v -> showCompletionDialog());
+
+        btnStartTest.setOnClickListener(v -> showTestDialog());
     }
 
     private void showCompletionDialog() {
@@ -207,24 +207,20 @@ public class LessonActivity extends AppCompatActivity {
     }
 
     private void completeLesson() {
-        // ИСПРАВЛЕНО: Завершение урока в фоновом потоке
         executorService.execute(() -> {
-            // Отметить урок как завершённый
             lesson.setCompleted(true);
+            lesson.setCompletedDate(System.currentTimeMillis());
             database.lessonDao().update(lesson);
 
-            // Добавить опыт пользователю
             int newExperience = currentUser.getExperience() + lesson.getExperienceReward();
             currentUser.setExperience(newExperience);
 
-            // Проверить повышение уровня
             int oldLevel = currentUser.getLevel();
             currentUser.calculateLevel();
             int newLevel = currentUser.getLevel();
 
             database.userDao().update(currentUser);
 
-            // Обновить прогресс квеста
             UserQuestProgress progress = database.userQuestProgressDao()
                     .getProgress(currentUser.getId(), quest.getId());
             if (progress != null) {
@@ -234,7 +230,6 @@ public class LessonActivity extends AppCompatActivity {
             }
 
             runOnUiThread(() -> {
-                // Показать диалог с наградой
                 showRewardDialog(oldLevel, newLevel);
             });
         });
@@ -247,7 +242,6 @@ public class LessonActivity extends AppCompatActivity {
             message += "\n\n🎉 ПОЗДРАВЛЯЕМ!\nВы достигли " + newLevel + " уровня!";
         }
 
-        // ИСПРАВЛЕНО: Проверка завершения квеста в фоновом потоке
         String finalMessage1 = message;
         executorService.execute(() -> {
             int completed = database.lessonDao().getCompletedLessonsCount(quest.getId());
@@ -263,14 +257,107 @@ public class LessonActivity extends AppCompatActivity {
                         .setTitle("🏆 Урок завершён!")
                         .setMessage(displayMessage)
                         .setPositiveButton("Отлично!", (dialog, which) -> {
-                            // Анимация
                             animateReward();
-                            // Обновить UI
                             updateUI();
                         })
                         .setCancelable(false)
                         .show();
             });
+        });
+    }
+
+    private void showTestDialog() {
+        if (lesson.getTestQuestion().isEmpty()) {
+            Toast.makeText(this, "Для этого урока нет теста", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_test, null);
+
+        TextView tvTestQuestion = dialogView.findViewById(R.id.tvTestQuestion);
+        RadioGroup rgAnswers = dialogView.findViewById(R.id.rgAnswers);
+        RadioButton rbOption1 = dialogView.findViewById(R.id.rbOption1);
+        RadioButton rbOption2 = dialogView.findViewById(R.id.rbOption2);
+        RadioButton rbOption3 = dialogView.findViewById(R.id.rbOption3);
+        RadioButton rbOption4 = dialogView.findViewById(R.id.rbOption4);
+        TextView tvAttemptsInfo = dialogView.findViewById(R.id.tvAttemptsInfo);
+
+        tvTestQuestion.setText(lesson.getTestQuestion());
+        rbOption1.setText(lesson.getTestOption1());
+        rbOption2.setText(lesson.getTestOption2());
+        rbOption3.setText(lesson.getTestOption3());
+        rbOption4.setText(lesson.getTestOption4());
+
+        int attemptsLeft = 3 - lesson.getAttemptsCount();
+        tvAttemptsInfo.setText("Попытка " + (lesson.getAttemptsCount() + 1) + " из 3");
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(dialogView)
+                .setCancelable(false)
+                .create();
+
+        dialogView.findViewById(R.id.btnCancelTest).setOnClickListener(v -> dialog.dismiss());
+
+        dialogView.findViewById(R.id.btnSubmitTest).setOnClickListener(v -> {
+            int selectedId = rgAnswers.getCheckedRadioButtonId();
+            if (selectedId == -1) {
+                Toast.makeText(this, "Выберите ответ", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            int selectedAnswer = 0;
+            if (selectedId == R.id.rbOption1) selectedAnswer = 1;
+            else if (selectedId == R.id.rbOption2) selectedAnswer = 2;
+            else if (selectedId == R.id.rbOption3) selectedAnswer = 3;
+            else if (selectedId == R.id.rbOption4) selectedAnswer = 4;
+
+            checkTestAnswer(selectedAnswer, dialog);
+        });
+
+        dialog.show();
+    }
+
+    private void checkTestAnswer(int selectedAnswer, AlertDialog dialog) {
+        executorService.execute(() -> {
+            lesson.setAttemptsCount(lesson.getAttemptsCount() + 1);
+
+            boolean isCorrect = selectedAnswer == lesson.getCorrectAnswerIndex();
+
+            if (isCorrect) {
+                lesson.setTestPassed(true);
+                database.lessonDao().update(lesson);
+
+                runOnUiThread(() -> {
+                    dialog.dismiss();
+                    new AlertDialog.Builder(this)
+                            .setTitle("✅ Правильно!")
+                            .setMessage("Отличная работа! Вы прошли тест.")
+                            .setPositiveButton("OK", (d, w) -> updateUI())
+                            .show();
+                });
+            } else {
+                database.lessonDao().update(lesson);
+
+                int attemptsLeft = 3 - lesson.getAttemptsCount();
+
+                runOnUiThread(() -> {
+                    if (attemptsLeft > 0) {
+                        dialog.dismiss();
+                        new AlertDialog.Builder(this)
+                                .setTitle("❌ Неправильно")
+                                .setMessage("Попробуйте еще раз. Осталось попыток: " + attemptsLeft)
+                                .setPositiveButton("OK", null)
+                                .show();
+                    } else {
+                        dialog.dismiss();
+                        new AlertDialog.Builder(this)
+                                .setTitle("Попытки закончились")
+                                .setMessage("К сожалению, вы использовали все попытки. Повторите урок позже.")
+                                .setPositiveButton("OK", (d, w) -> updateUI())
+                                .show();
+                    }
+                });
+            }
         });
     }
 

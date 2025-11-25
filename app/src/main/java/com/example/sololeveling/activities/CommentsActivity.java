@@ -143,13 +143,14 @@ public class CommentsActivity extends AppCompatActivity implements CommentAdapte
                 String userName = user != null ? user.getNickname() : "Пользователь";
                 int repliesCount = database.commentDao().getReplies(comment.getId()).size();
 
-                // ИСПРАВЛЕНО: Передаем currentUserId
+                // ИСПРАВЛЕНО: Теперь передаем userId правильно
                 items.add(new CommentAdapter.CommentItem(comment, userName, repliesCount, false, userId));
 
                 List<Comment> replies = database.commentDao().getReplies(comment.getId());
                 for (Comment reply : replies) {
                     User replyUser = database.userDao().getUserById(reply.getUserId());
                     String replyUserName = replyUser != null ? replyUser.getNickname() : "Пользователь";
+                    // ИСПРАВЛЕНО: И здесь тоже
                     items.add(new CommentAdapter.CommentItem(reply, replyUserName, 0, true, userId));
                 }
             }
